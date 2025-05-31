@@ -8,7 +8,6 @@ function refreshWeather(response) {
   let date = new Date(response.data.time * 1000);
   let iconElement = document.querySelector("#icon");
 
-  console.log(response.data);
   iconElement.innerHTML =
     "<img src=" +
     response.data.condition.icon_url +
@@ -51,6 +50,7 @@ function searchCity(city) {
     city +
     "&key=" +
     apiKey;
+  console.log(apiUrl);
   axios.get(apiUrl).then(refreshWeather);
 }
 
@@ -60,6 +60,12 @@ function handleSearchSubmit(event) {
   let cityElement = document.querySelector("#city");
   cityElement.innerHTML = searchInput.value;
   searchCity(searchInput.value);
+}
+function formatDay(timestamp) {
+  let date = new Date(timestamp * 1000);
+  let days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+  return days[date.getDay()];
 }
 
 function getForecast(city) {
@@ -73,27 +79,28 @@ function getForecast(city) {
 }
 
 function displayForecast(response) {
-  console.log(response.data);
-}
-
-function displayForecast() {
   let forecastHtml = "";
 
-  let days = ["Sat", "Sun", "Mon", "Tue", "Wed"];
-  days.forEach(function (day) {
-    forecastHtml =
-      forecastHtml +
-      `
+  response.data.daily.forEach(function (day, index) {
+    if (index < 5) {
+      forecastHtml =
+        forecastHtml +
+        `
       <div class="weather-forecast-day">
-        <div class="weather-forecast-date">${day}</div>
-        <div class="weather-forecast-icon">☀️</div>
+        <div class="weather-forecast-date">${formatDay(day.time)}</div>
+        <div><img src="${
+          day.condition.icon_url
+        }" class="weather-forecast-icon" /></div>
         <div class="weather-forecast-temperatures">
           <div class="weather-forecast-temperature">
-            <strong>25°</strong>
+            <strong>${Math.round(day.temperature.maximum)}°</strong>
           </div>
-          <div class="weather-forecast-temperature">13°</div>
+          <div class="weather-forecast-temperature">${Math.round(
+            day.temperature.minimum
+          )}°</div>
         </div>
       </div>`;
+    }
   });
   let forecastElement = document.querySelector("#forecast");
   forecastElement.innerHTML = forecastHtml;
